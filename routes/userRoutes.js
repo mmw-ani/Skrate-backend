@@ -3,7 +3,7 @@ const User = require('../models/users');
 const {uid}  = require('uid');
 const Meeting = require('../models/meetings');
 const router = express.Router();
-const {validateAlphaNumbericInput} = require('../controllers');
+const {validateAlphaNumbericInput, getMeetingDetails} = require('../controllers');
 
 // Get all User details 
 
@@ -16,7 +16,7 @@ router.get('/all',async (request,response)=>{
                 userId:item.userId
             }
         })
-        response.json(result);
+        response.json({data:result});
     }
     catch(e){
         return response.status(500).json({"message":"Internal Server Error"});
@@ -31,7 +31,7 @@ router.post('/new',async (request,response)=>{
     let username = request.body.username;
     username =validateAlphaNumbericInput(username);
     if(!username){
-        return response.status(422).json({'error':'Username must be Alphanumeric'})
+        return response.status(422).json({'message':'Username must be Alphanumeric'})
     }
     try{
         const checkIfUsernamePresent = await User.findOne({username:username});
@@ -73,7 +73,7 @@ router.get('/:username',async (request,response)=>{
                 username:userDetail.username,
                 userId:userDetail.userId
             }
-            return response.json(result);
+            return response.json({data:result});
         }
         else{
             return response.status(404).json({"message":"Username does not exists"});
@@ -97,8 +97,9 @@ router.get('/:username/meetings',async (request,response)=>{
         if(!checkIsUserPresent)
             return response.status(404).json({"message":"Username does not exists"});
 
-        const result = await Meeting.find({$or:[{username1:username},{username2:username}]});
-        response.send(result);
+        let meetingsResult = await Meeting.find({$or:[{username1:username},{username2:username}]});
+        meetingsResult = meetingsResult.map((item)=>(getMeetingDetails(item)));
+        response.send({data:meetingsResult});
     }
     catch(e){
         return response.status(501).json({"message":"Internal Server Error"});

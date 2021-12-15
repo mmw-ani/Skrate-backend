@@ -1,7 +1,7 @@
 const express = require('express');
 const Meeting = require('../models/meetings');
 const User = require('../models/users');
-const {validateAlphaNumbericInput} = require('../controllers');
+const {validateAlphaNumbericInput,getMeetingDetails} = require('../controllers');
 const router = express.Router();
 const {uid} = require('uid');
 
@@ -12,13 +12,13 @@ router.post('/new',async (request,response)=>{
     uid1 = validateAlphaNumbericInput(uid1)
     uid2 = validateAlphaNumbericInput(uid2);
     if(!uid1&&!uid2){
-        return response.status(422).json({'error':'Enter Valid uid'});
+        return response.status(422).json({'message':'Enter Valid uid'});
     }
     try{
         const uid1Details = await User.findOne({userId:uid1});
         const uid2Details = await User.findOne({userId:uid2});
         if(!uid1Details&&!uid2Details){
-            return response.status(404).json({'error':'Uid does not exists'});
+            return response.status(404).json({'message':'Uid does not exists'});
         }
         const payload = {
             userId1:uid1,
@@ -32,7 +32,7 @@ router.post('/new',async (request,response)=>{
         return response.json({'meetingId':payload.meetingId});
     }
     catch(e){
-        return response.status(500).json({'error':"Internal Server Error"});
+        return response.status(500).json({'message':"Internal Server Error"});
     }
 })
 
@@ -42,20 +42,11 @@ router.get('/all',async (request,response)=>{
     
     try{
         const responseFromDb = await Meeting.find().sort({createdAt:-1});
-        const result = responseFromDb.map((item)=>{
-            return{
-                uid1:item.userId1,
-                username1:item.username1,
-                uid2:item.userId2,
-                username2:item.username2,
-                meetingId:item.meetingId,
-                date:item.date
-            }
-        })
-        return response.json(result);
+        const result = responseFromDb.map((item)=>getMeetingDetails(item))
+        return response.json({data:result});
     }
     catch(e){
-        return response.status(500).json({'error':"Internal Server Error"});
+        return response.status(500).json({'message':"Internal Server Error"});
     }
 })
 
@@ -69,18 +60,11 @@ router.get('/:meetingId',async (request,response)=>{
         if(!responseFromDb){
             return response.status(404).send('Meeting Id does not exists');
         }
-        const result = {
-                uid1:responseFromDb.userId1,
-                username1:responseFromDb.username1,
-                uid2:responseFromDb.userId2,
-                username2:responseFromDb.username2,
-                meetingId:responseFromDb.meetingId,
-                date:responseFromDb.date
-            }
-        return response.json(result);
+        const result = getMeetingDetails(responseFromDb);
+        return response.json({data:result});
     }
     catch(e){
-        return response.status(500).json({'error':"Internal Server Error"});
+        return response.status(500).json({'message':"Internal Server Error"});
     }
 })
 
