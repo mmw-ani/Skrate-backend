@@ -1,0 +1,30 @@
+POST http://localhost:3000/user/new
+Content-Type: application/json
+
+{
+    "username":"animesh25455"
+}
+
+###
+GET http://localhost:3000/user/all
+
+### 
+GET http://localhost:3000/user/animesh
+
+
+###
+POST http://localhost:3000/meetings/new
+Content-Type: application/json
+
+{
+    "uid1":"6180826083d20d9e",
+    "uid2":"1e2b8117d0387c73",
+    "date":"2021-12-15T20:36:24.971+00:00"
+}
+
+###
+GET http://localhost:3000/meetings/all
+
+###
+
+GET http://localhost:3000/meetings/0ce0a2cc755453271ed4
